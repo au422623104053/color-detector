@@ -37,3 +37,34 @@ def get_color_name(R, G, B, color_data):
 
 # Streamlit UI
 st.title("🎨 Color Detection from Image (No OpenCV)")
+
+uploaded_file = st.file_uploader("Upload an Image", type=["jpg", "jpeg", "png"])
+
+if uploaded_file is not None:
+    image = Image.open(uploaded_file).convert("RGB")
+    st.write("*Click on the image below to detect a color*")
+
+    coords = streamlit_image_coordinates(image, key="click_image")
+
+    if coords is not None:
+        x, y = int(coords['x']), int(coords['y'])
+        st.write(f"📍 Clicked Coordinates: ({x}, {y})")
+
+        image_np = np.array(image)
+        if y < image_np.shape[0] and x < image_np.shape[1]:
+            r, g, b = image_np[y, x]
+            st.write(f"🎨 Clicked Pixel RGB: ({r}, {g}, {b})")
+
+            color_info = get_color_name(r, g, b, color_data)
+            hex_color = color_info['hex']
+
+            st.markdown(f"""
+            ### 🎯 Detected Color: {color_info['color_name']}
+            - RGB: ({r}, {g}, {b})
+            - HEX: {hex_color}
+            """)
+            st.markdown(f"""
+            <div style="width:100px; height:50px; background-color:{hex_color}; border:1px solid #000;"></div>
+            """, unsafe_allow_html=True)
+        else:
+            st.warning("Clicked outside image bounds.")
